@@ -1,0 +1,33 @@
+目前：
+Planner → Developer → Reviewer → Fixer ✅
+
+下一步：
+Observability
+↓
+per-Agent token / latency / finish reason
+
+再下一步：
+Failure Policy
+↓
+length / timeout / invalid JSON / retry
+
+再下一步：
+Structured Files
+↓
+Implementation 不再是一大坨 Markdown
+
+再下一步：
+Sandbox
+↓
+write_file
+
+再下一步：
+dotnet build / test
+↓
+deterministic evaluator
+
+再下一步：
+OpenTelemetry / Aspire
+
+再下一步：
+Parallel / Routing / MCP
