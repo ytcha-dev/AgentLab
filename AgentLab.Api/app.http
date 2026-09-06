@@ -1,0 +1,41 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+GET https://localhost:7195/ping
+
+###
+
+### plan Agent
+
+POST https://localhost:7195/agent/plan
+Content-Type: application/json
+
+{
+  "Goal": "Build an ASP.NET Core Todo API using SQLite with CRUD and validation."
+}
+
+### plan + develop Agent
+
+POST https://localhost:7195/agent/develop
+Content-Type: application/json
+
+{
+  "Goal": "建置 ASP.NET Core Todo API，使用 SQLite 並包含 CRUD 和驗證功能。"
+}
+
+### plan + develop + review Agent
+
+POST https://localhost:7195/agent/review
+Content-Type: application/json
+
+{
+  "Goal": "建置 ASP.NET Core Todo API，使用 SQLite 並包含 CRUD 和驗證功能。"
+}
+
+### plan + develop + review + fixer Agent
+
+POST https://localhost:7195/agent/run
+Content-Type: application/json
+
+{
+  "Goal": "建置 ASP.NET Core Todo API，使用 SQLite 並包含 CRUD 和驗證功能。"
+}
