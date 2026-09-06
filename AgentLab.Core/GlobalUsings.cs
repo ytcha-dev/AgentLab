@@ -9,4 +9,5 @@ global using OllamaSharp.Models;
 
 global using AgentLab.Core.Contracts;
 global using AgentLab.Core.Models;
+global using AgentLab.Core.Runtime;
 

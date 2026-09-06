@@ -1,8 +1,8 @@
 ﻿namespace AgentLab.Core.Agents
 {
-    public class FixerAgent(IChatClient chatClient) : IAgent<FixInput, Implementation>
+    public class FixerAgent(AgentExecutor executor) : IAgent<FixInput, Implementation>
     {
-        private readonly IChatClient _chatClient = chatClient;
+        private readonly AgentExecutor _executor = executor;
 
         public async Task<Implementation> ExecuteAsync(FixInput input, CancellationToken cancellationToken = default)
         {
@@ -50,14 +50,19 @@
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 25000
+                MaxOutputTokens = 6000
             };
 
             options.AddOllamaOption(
                 OllamaOption.Think,
                 true);
 
-            var response = await _chatClient.GetResponseAsync(
+            options.AddOllamaOption(
+                OllamaOption.NumCtx,
+                8192);
+
+            var response = await _executor.ExecuteAsync(
+                "fixer",
                 messages,
                 options,
                 cancellationToken);

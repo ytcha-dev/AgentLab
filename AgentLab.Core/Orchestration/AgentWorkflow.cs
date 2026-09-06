@@ -10,8 +10,8 @@ namespace AgentLab.Core.Orchestration
         private readonly FixerAgent _fixer = fixer;
 
         public async Task<WorkflowResult> ExecuteAsync(
-        CodingTask task,
-        CancellationToken cancellationToken = default)
+            CodingTask task,
+            CancellationToken cancellationToken = default)
         {
             var plan = await _planner.ExecuteAsync(
                 task,
@@ -27,6 +27,9 @@ namespace AgentLab.Core.Orchestration
 
             for (var attempt = 0; attempt <= maxRetries; attempt++)
             {
+                Console.WriteLine(
+                    $"[Workflow] Review attempt {attempt + 1}/{maxRetries + 1}");
+
                 review = await _reviewer.ExecuteAsync(
                     new ReviewInput(
                         task,
@@ -39,6 +42,9 @@ namespace AgentLab.Core.Orchestration
 
                 if (attempt == maxRetries)
                     break;
+
+                Console.WriteLine(
+                    $"[Workflow] Fix attempt {attempt + 1}/{maxRetries}");
 
                 implementation = await _fixer.ExecuteAsync(
                     new FixInput(

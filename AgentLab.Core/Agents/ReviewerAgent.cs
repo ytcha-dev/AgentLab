@@ -1,8 +1,8 @@
 ﻿namespace AgentLab.Core.Agents
 {
-    public class ReviewerAgent(IChatClient chatClient) : IAgent<ReviewInput, ReviewResult>
+    public class ReviewerAgent(AgentExecutor executor) : IAgent<ReviewInput, ReviewResult>
     {
-        private readonly IChatClient _chatClient = chatClient;
+        private readonly AgentExecutor _executor = executor;
 
         public async Task<ReviewResult> ExecuteAsync(
             ReviewInput input,
@@ -68,7 +68,7 @@
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 25000,
+                MaxOutputTokens = 2000,
                 Temperature = 0.1f
             };
 
@@ -76,7 +76,13 @@
                 OllamaOption.Think,
                 false);
 
-            var response = await _chatClient.GetResponseAsync(
+
+            options.AddOllamaOption(
+                OllamaOption.NumCtx,
+                8192);
+
+            var response = await _executor.ExecuteAsync(
+                "reviewer",
                 messages,
                 options,
                 cancellationToken);

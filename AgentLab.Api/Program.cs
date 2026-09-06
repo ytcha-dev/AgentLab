@@ -1,6 +1,7 @@
 using AgentLab.Core.Agents;
 using AgentLab.Core.Models;
 using AgentLab.Core.Orchestration;
+using AgentLab.Core.Runtime;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
@@ -27,6 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddScoped<ReviewerAgent>();
     builder.Services.AddScoped<FixerAgent>();
     builder.Services.AddScoped<AgentWorkflow>();
+    builder.Services.AddSingleton<AgentExecutor>();
 }
 
 var app = builder.Build();

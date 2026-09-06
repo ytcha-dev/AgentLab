@@ -1,8 +1,8 @@
 ﻿namespace AgentLab.Core.Agents
 {
-    public class PlannerAgent(IChatClient chatClient) : IAgent<CodingTask, Plan>
+    public class PlannerAgent(AgentExecutor executor) : IAgent<CodingTask, Plan>
     {
-        private readonly IChatClient _chatClient = chatClient;
+        private readonly AgentExecutor _executor = executor;
 
         public static JsonSerializerOptions SerializerOptions => new()
         {
@@ -53,7 +53,7 @@
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 25000,
+                MaxOutputTokens = 700,
                 //Temperature = 0.2f
             };
 
@@ -61,7 +61,12 @@
                 OllamaOption.Think,
                 false);
 
-            var response = await _chatClient.GetResponseAsync(
+            options.AddOllamaOption(
+                OllamaOption.NumCtx,
+                8192);
+
+            var response = await _executor.ExecuteAsync(
+                "planner",
                 messages,
                 options,
                 cancellationToken);

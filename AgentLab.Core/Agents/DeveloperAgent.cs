@@ -1,8 +1,8 @@
 ﻿namespace AgentLab.Core.Agents
 {
-    public class DeveloperAgent(IChatClient chatClient) : IAgent<DeveloperInput, Implementation>
+    public class DeveloperAgent(AgentExecutor executor) : IAgent<DeveloperInput, Implementation>
     {
-        private readonly IChatClient _chatClient = chatClient;
+        private readonly AgentExecutor _executor = executor;
 
         public async Task<Implementation> ExecuteAsync(
             DeveloperInput input,
@@ -42,14 +42,20 @@
 
             var options = new ChatOptions
             {
-                MaxOutputTokens = 25000,
+                MaxOutputTokens = 6000,
             };
 
             options.AddOllamaOption(
                 OllamaOption.Think,
                 true);
 
-            var response = await _chatClient.GetResponseAsync(
+
+            options.AddOllamaOption(
+                OllamaOption.NumCtx,
+                8192);
+
+            var response = await _executor.ExecuteAsync(
+                "developer",
                 messages,
                 options,
                 cancellationToken);
