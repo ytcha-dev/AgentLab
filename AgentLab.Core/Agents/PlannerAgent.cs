@@ -9,8 +9,9 @@
             PropertyNameCaseInsensitive = true
         };
 
-        public async Task<Plan> ExecuteAsync(
+        public async Task<AgentStepResult<Plan>> ExecuteAsync(
             CodingTask input,
+            AgentExecutionContext context,
             CancellationToken cancellationToken = default)
         {
             var messages = new ChatMessage[]
@@ -57,13 +58,19 @@
                 //Temperature = 0.2f
             };
 
-            var response = await _executor.ExecuteAsync(
+            var execution = await _executor.ExecuteAsync(
+                context,
                 "planner",
                 messages,
                 options,
                 cancellationToken);
 
-            var json = response.Text
+            if (!execution.IsSuccess)
+            {
+                return AgentStepResult<Plan>.FromFailure(execution);
+            }
+
+            var json = execution.Output
                 ?? throw new InvalidOperationException(
                     "Planner agent did not return a response.");
 
@@ -71,9 +78,11 @@
                 json,
                 SerializerOptions);
 
-            return plan
-                ?? throw new InvalidOperationException(
-                    "Planner agent returned invalid JSON.");
+            return new AgentStepResult<Plan>(
+                execution,
+                plan
+                    ?? throw new InvalidOperationException(
+                        "Planner agent returned invalid JSON."));
         }
     }
 }

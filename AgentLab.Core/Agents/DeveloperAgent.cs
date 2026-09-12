@@ -4,8 +4,9 @@
     {
         private readonly AgentExecutor _executor = executor;
 
-        public async Task<Implementation> ExecuteAsync(
+        public async Task<AgentStepResult<Implementation>> ExecuteAsync(
             DeveloperInput input,
+            AgentExecutionContext context,
             CancellationToken cancellationToken = default)
         {
             var messages = new ChatMessage[]
@@ -45,20 +46,28 @@
                 MaxOutputTokens = 6000,
             };
 
-            var response = await _executor.ExecuteAsync(
+            var execution = await _executor.ExecuteAsync(
+                context,
                 "developer",
                 messages,
                 options,
                 cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(response.Text))
+            if (!execution.IsSuccess)
+            {
+                return AgentStepResult<Implementation>.FromFailure(execution);
+            }
+
+            if (string.IsNullOrWhiteSpace(execution.Output))
             {
                 throw new InvalidOperationException(
                     $"Developer returned no final text. " +
-                    $"FinishReason: {response.FinishReason}");
+                    $"FinishReason: {execution.FinishReason}");
             }
 
-            return new Implementation(response.Text);
+            return new AgentStepResult<Implementation>(
+                execution,
+                new Implementation(execution.Output));
         }
     }
 }

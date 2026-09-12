@@ -4,8 +4,9 @@
     {
         private readonly AgentExecutor _executor = executor;
 
-        public async Task<ReviewResult> ExecuteAsync(
+        public async Task<AgentStepResult<ReviewResult>> ExecuteAsync(
             ReviewInput input,
+            AgentExecutionContext context,
             CancellationToken cancellationToken = default)
         {
             var messages = new List<ChatMessage>
@@ -72,29 +73,37 @@
                 Temperature = 0.1f
             };
 
-            var response = await _executor.ExecuteAsync(
+            var execution = await _executor.ExecuteAsync(
+                context,
                 "reviewer",
                 messages,
                 options,
                 cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(response.Text))
+            if (!execution.IsSuccess)
+            {
+                return AgentStepResult<ReviewResult>.FromFailure(execution);
+            }
+
+            if (string.IsNullOrWhiteSpace(execution.Output))
             {
                 throw new InvalidOperationException(
                     $"Reviewer returned no final text. " +
-                    $"FinishReason: {response.FinishReason}");
+                    $"FinishReason: {execution.FinishReason}");
             }
 
             var result = JsonSerializer.Deserialize<ReviewResult>(
-                response.Text,
+                execution.Output,
                 new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-            return result
-                ?? throw new InvalidOperationException(
-                    "Reviewer response could not be deserialized.");
+            return new AgentStepResult<ReviewResult>(
+                execution,
+                result
+                    ?? throw new InvalidOperationException(
+                        "Reviewer response could not be deserialized."));
         }
     }
 }

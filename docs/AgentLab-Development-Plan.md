@@ -84,7 +84,7 @@ Agent 執行時，每段內容都必須帶有來源與信任等級，不得只�
 
 目前主要缺口：
 
-- `AgentExecutionContext`、`AgentExecutionResult` 尚未串入完整呼叫鏈。
+- execution context/result 已串過四個 Agent 與 Workflow；prompt version、完整 failure taxonomy 與 artifact references 尚未補齊。
 - 只有 `length` 被正規化；timeout、空回應、invalid JSON、provider error 尚未統一分類。
 - Planner/Reviewer 的 JSON 錯誤在 Agent 內變成一般例外，Failure Policy 無法判斷是否可重試。
 - Implementation 是整塊 Markdown，不能安全、確定地套用檔案變更。
@@ -539,6 +539,8 @@ docs/decisions/
 
 完成定義：現有功能不退步；fake chat tests 可重現成功、拒絕與最後未核准。
 
+實作狀態（2026-09-12）：第一個 typed execution result 垂直切片已完成。`RunContext`、`AgentExecutionContext`、`AgentExecutionResult`、`AgentStepResult<T>`、`FailureInfo` 與 `WorkflowStatus` 已串入四個 Agent 與 Workflow；fake chat tests 可重現成功、拒絕後修正、最後未核准、provider failure 與 cancellation。M0 尚未完成的項目是 prompt/config version 識別與更完整的 integration fixture／failure normalization。
+
 ### M1 — Observability
 
 交付：
@@ -664,7 +666,7 @@ PR/變更說明至少包含：目標、scope、資料契約變化、風險、測
 
 下一步依序執行：
 
-1. **Execution result 垂直切片**：讓 `AgentExecutor` 回傳帶 usage/failure 的 typed result，並把 run/workflow/attempt context 串過四個 Agent。
+1. **Execution result 垂直切片（已完成，2026-09-12）**：`AgentExecutor` 已回傳帶 usage/failure 的 typed result，run/workflow/step/attempt context 已串過四個 Agent，Workflow 會明確回傳成功、未核准、失敗或取消。
 2. **Failure normalization 垂直切片**：把 empty、invalid JSON、timeout、cancel、length 與 provider error 全部映射成 `FailureInfo`，用 fake client 寫 deterministic tests。
 3. **ChangeSet 垂直切片**：先讓 Developer 對單一 fixture 產生 create/update JSON，不寫真實工作區；通過 schema/path/hash tests 後才接 sandbox write。
 

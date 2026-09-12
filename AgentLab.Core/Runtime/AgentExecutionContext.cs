@@ -1,6 +1,8 @@
 ﻿namespace AgentLab.Core.Runtime
 {
     public sealed record AgentExecutionContext(
+        string RunId,
         string WorkflowId,
-        int? Attempt = null);
+        string StepId,
+        int Attempt);
 }
