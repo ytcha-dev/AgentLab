@@ -53,14 +53,6 @@
                 MaxOutputTokens = 6000
             };
 
-            options.AddOllamaOption(
-                OllamaOption.Think,
-                true);
-
-            options.AddOllamaOption(
-                OllamaOption.NumCtx,
-                8192);
-
             var response = await _executor.ExecuteAsync(
                 "fixer",
                 messages,

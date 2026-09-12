@@ -1,27 +1,14 @@
 using AgentLab.Core.Agents;
+using AgentLab.Core.Contracts;
 using AgentLab.Core.Models;
 using AgentLab.Core.Orchestration;
 using AgentLab.Core.Runtime;
+using AgentLab.Infrastructure.ModelProviders;
 using Microsoft.Extensions.AI;
-using OllamaSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 {
-    builder.Services.AddHttpClient("ollama", client =>
-    {
-        client.BaseAddress = new Uri("http://localhost:11434");
-        client.Timeout = TimeSpan.FromMinutes(5);
-    });
-
-    builder.Services.AddSingleton<IChatClient>(sp =>
-    {
-        var factory = sp.GetRequiredService<IHttpClientFactory>();
-        var httpClient = factory.CreateClient("ollama");
-
-        return new OllamaApiClient(
-            httpClient,
-            "qwen3.5:9b");
-    });
+    builder.Services.AddAgentModelProviders(builder.Configuration);
 
     builder.Services.AddScoped<PlannerAgent>();
     builder.Services.AddScoped<DeveloperAgent>();
@@ -40,12 +27,26 @@ var app = builder.Build();
 
     app.MapGet("/ping", () => Results.Ok("pong"));
 
-    app.MapGet("/ai/test", async (IChatClient chatClient) =>
+    app.MapGet("/ai/model/{agentName}", (
+        string agentName,
+        IAgentModelResolver models) =>
     {
-        var response = await chatClient.GetResponseAsync("Hello, AI!");
+        return Results.Ok(models.Resolve(agentName).Descriptor);
+    });
+
+    app.MapGet("/ai/test", async (
+        AgentExecutor executor,
+        CancellationToken cancellationToken) =>
+    {
+        var response = await executor.ExecuteAsync(
+            "test",
+            [new ChatMessage(ChatRole.User, "Hello, AI!")],
+            new ChatOptions { MaxOutputTokens = 100 },
+            cancellationToken);
+
         return Results.Ok(new
         {
-            response
+            response = response.Text
         });
     });
 

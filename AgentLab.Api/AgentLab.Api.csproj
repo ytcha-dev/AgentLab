@@ -8,12 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.9.0" />
-    <PackageReference Include="OllamaSharp" Version="5.4.30" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AgentLab.Core\AgentLab.Core.csproj" />
+    <ProjectReference Include="..\AgentLab.Infrastructure\AgentLab.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

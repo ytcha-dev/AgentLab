@@ -72,15 +72,6 @@
                 Temperature = 0.1f
             };
 
-            options.AddOllamaOption(
-                OllamaOption.Think,
-                false);
-
-
-            options.AddOllamaOption(
-                OllamaOption.NumCtx,
-                8192);
-
             var response = await _executor.ExecuteAsync(
                 "reviewer",
                 messages,

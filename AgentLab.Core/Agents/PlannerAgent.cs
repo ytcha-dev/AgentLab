@@ -57,14 +57,6 @@
                 //Temperature = 0.2f
             };
 
-            options.AddOllamaOption(
-                OllamaOption.Think,
-                false);
-
-            options.AddOllamaOption(
-                OllamaOption.NumCtx,
-                8192);
-
             var response = await _executor.ExecuteAsync(
                 "planner",
                 messages,

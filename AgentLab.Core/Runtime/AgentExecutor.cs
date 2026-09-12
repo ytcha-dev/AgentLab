@@ -3,9 +3,11 @@ using System.Diagnostics;
 
 namespace AgentLab.Core.Runtime
 {
-    public class AgentExecutor(IChatClient chatClient, ILogger<AgentExecutor> logger)
+    public class AgentExecutor(
+        IAgentModelResolver modelResolver,
+        ILogger<AgentExecutor> logger)
     {
-        private readonly IChatClient _chatClient = chatClient;
+        private readonly IAgentModelResolver _modelResolver = modelResolver;
         private readonly ILogger<AgentExecutor> _logger = logger;
 
         public async Task<ChatResponse> ExecuteAsync(
@@ -14,20 +16,26 @@ namespace AgentLab.Core.Runtime
             ChatOptions options,
             CancellationToken cancellationToken = default)
         {
+            var agentModel = _modelResolver.Resolve(agentName);
+            agentModel.ConfigureOptions(agentName, options);
+
             var executionId = Guid.NewGuid()
                 .ToString("N")[..8];
 
             var sw = Stopwatch.StartNew();
 
             _logger.LogInformation(
-                "[{AgentName}][{executionId}] START MaxOutputTokens={MaxOutputTokens}",
+                "[{AgentName}][{ExecutionId}] START Profile={ProfileName} Provider={Provider} Model={Model} MaxOutputTokens={MaxOutputTokens}",
                 agentName,
                 executionId,
+                agentModel.Descriptor.ProfileName,
+                agentModel.Descriptor.Provider,
+                agentModel.Descriptor.Model,
                 options.MaxOutputTokens);
 
             try
             {
-                var response = await _chatClient.GetResponseAsync(
+                var response = await agentModel.ChatClient.GetResponseAsync(
                     messages,
                     options,
                     cancellationToken);
@@ -41,7 +49,7 @@ namespace AgentLab.Core.Runtime
                         StringComparison.OrdinalIgnoreCase) == true)
                 {
                     _logger.LogWarning(
-                        "[{AgentName}][{executionId}] TRUNCATED Duration={Duration:F2}s InputTokens={InputTokens} OutputTokens={OutputTokens}",
+                        "[{AgentName}][{ExecutionId}] TRUNCATED Duration={Duration:F2}s InputTokens={InputTokens} OutputTokens={OutputTokens}",
                         agentName,
                         executionId,
                         sw.Elapsed.TotalSeconds,
@@ -55,7 +63,7 @@ namespace AgentLab.Core.Runtime
                 }
 
                 _logger.LogInformation(
-                    "[{AgentName}][{executionId}] END Duration={Duration:F2}s InputTokens={InputTokens} OutputTokens={OutputTokens} FinishReason={FinishReason}",
+                    "[{AgentName}][{ExecutionId}] END Duration={Duration:F2}s InputTokens={InputTokens} OutputTokens={OutputTokens} FinishReason={FinishReason}",
                     agentName,
                     executionId,
                     sw.Elapsed.TotalSeconds,
@@ -70,7 +78,7 @@ namespace AgentLab.Core.Runtime
                 sw.Stop();
 
                 _logger.LogWarning(
-                    "[{AgentName}][{executionId}] CANCELLED Duration={Duration:F2}s",
+                    "[{AgentName}][{ExecutionId}] CANCELLED Duration={Duration:F2}s",
                     agentName,
                     executionId,
                     sw.Elapsed.TotalSeconds);
@@ -83,7 +91,7 @@ namespace AgentLab.Core.Runtime
 
                 _logger.LogError(
                     ex,
-                    "[{AgentName}][{executionId}] ERROR Duration={Duration:F2}s",
+                    "[{AgentName}][{ExecutionId}] ERROR Duration={Duration:F2}s",
                     agentName,
                     executionId,
                     sw.Elapsed.TotalSeconds);

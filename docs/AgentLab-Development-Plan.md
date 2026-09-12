@@ -125,7 +125,24 @@ Accepted → Planning → Implementing → Applying
 
 每個狀態必須列出：允許的下一狀態、進入條件、離開條件、最大嘗試次數與可保存的 checkpoint。
 
-### 6.2 Agent Runtime
+### 6.2 Model Provider Layer
+
+模型供應層以具名 profile 封裝 provider、model、endpoint、credential reference、timeout、context 與 provider-specific options。Orchestrator 與 Agent 只依賴 `IChatClient` 及 provider-neutral descriptor。
+
+必要能力：
+
+- 以設定切換全部 Agent 的 default profile。
+- 以 agent name 覆蓋 profile，支援雲端／地端混合。
+- Provider factory 可插拔，不在 Core 使用 provider switch。
+- 缺少 profile、factory 或 credential 時 fail fast，不無聲 fallback。
+- 記錄 resolved profile/provider/model，供 trace 與 eval 比較。
+- 以 capability metadata 驗證 structured output、tools、reasoning 等需求；不假設所有模型能力相同。
+
+具體設定與擴充方式見 `docs/model-providers.md`，設計決策見 ADR 0001。
+
+實作狀態（2026-09-12）：具名 profile、default/per-Agent selection、Ollama 與 OpenAI-compatible factories、設定驗證及診斷 endpoint 已完成；capability metadata 與 runtime hot swap 尚未實作。
+
+### 6.3 Agent Runtime
 
 負責一次模型呼叫的共同處理：
 
@@ -136,7 +153,7 @@ Accepted → Planning → Implementing → Applying
 - 將 provider 例外轉成統一的 `FailureInfo`。
 - 交由 retry policy 決定重試，不讓各 Agent 自行複製 try/catch。
 
-### 6.3 Agent definitions
+### 6.4 Agent definitions
 
 保留目前四個角色，但縮小責任：
 
@@ -147,7 +164,7 @@ Accepted → Planning → Implementing → Applying
 
 未來可新增 ContextCollector、Router 或 Specialist，但不得在沒有 eval 證據前拆分更多角色。
 
-### 6.4 Tool Runtime
+### 6.5 Tool Runtime
 
 所有工具具有 typed schema、權限等級、timeout、輸出大小上限與 audit event。第一批工具只需要：
 
@@ -160,7 +177,7 @@ Accepted → Planning → Implementing → Applying
 
 不得一開始就提供任意 shell。若之後加入，命令、參數、工作目錄、環境變數與網路權限都必須受 allowlist 控制。
 
-### 6.5 Policy Engine
+### 6.6 Policy Engine
 
 Policy Engine 在模型與工具之間執行，至少判斷：
 
@@ -171,7 +188,7 @@ Policy Engine 在模型與工具之間執行，至少判斷：
 - 是否接觸秘密、credential、`.git` 或受保護檔案。
 - 工具參數是否來自未信任內容，且已通過 schema 驗證。
 
-### 6.6 Validators / Evaluators
+### 6.7 Validators / Evaluators
 
 Validator 回答「結果是否客觀有效」；Reviewer 回答「結果是否符合意圖與設計」。兩者不能互相取代。
 
@@ -186,7 +203,7 @@ Validator 回答「結果是否客觀有效」；Reviewer 回答「結果是否�
 
 之後才加入 analyzer、formatter、安全掃描及 LLM grader。
 
-### 6.7 Artifact Store
+### 6.8 Artifact Store
 
 每次 run 保存：request、採用的 project instructions、plan、每版 ChangeSet、diff、build/test 摘要、review、failure、prompt/config hash 與 trace id。原始 prompt/output 是否保存應由資料政策控制，預設不可寫入 secret。
 

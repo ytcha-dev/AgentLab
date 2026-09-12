@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="AgentLab.Api/AgentLab.Api.csproj" />
   <Project Path="AgentLab.Core/AgentLab.Core.csproj" />
+  <Project Path="AgentLab.Infrastructure/AgentLab.Infrastructure.csproj" />
+  <Project Path="AgentLab.Infrastructure.Tests/AgentLab.Infrastructure.Tests.csproj" />
 </Solution>
