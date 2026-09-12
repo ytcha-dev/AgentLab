@@ -518,7 +518,15 @@ docs/decisions/
 
 `AgentLab.Core` 不引用 Ollama、Aspire、OpenTelemetry exporter 或 process implementation；這些由 Infrastructure 實作介面。
 
-## 18. 實作里程碑與完成定義
+## 18. 計畫階段、實作里程碑與完成定義
+
+### 計畫階段邊界
+
+**第一階段（目前）：完成 Agent 工程學習閉環。** 以 Software Development Workflow 作為 reference implementation，M0–M6 為必要主線，依序建立契約、可觀測性、失敗政策、structured artifacts、sandbox、deterministic validation 與 eval。M7–M8 是完成主線後的進階實驗，M9 維持選做。第一階段不以支援任意主題或由 App 動態組裝 Agent 為完成條件。
+
+**第二階段（未來）：驗證多 Workflow 泛化。** 第一階段通過 M6 gate 後，先新增一個真實且不同的 Workflow，從兩條已驗證流程的重複處抽取共用 runtime／definition contract。只有具體 use case 與 eval 證明需要時，才評估 prompt catalog、agent catalog、workflow definition／graph 與 App 組態介面；不預先建立通用 DSL 或雲端 Agent Flow 平台。
+
+目前的設計原則是「泛化接縫，不泛化產品」：prompt 保留版本識別、model 使用具名 profile、執行資料使用 typed context，但 prompt、Agent 組合與 workflow transition 仍由受版本控制的 reference workflow 定義。
 
 ### M0 — Baseline 與契約
 
